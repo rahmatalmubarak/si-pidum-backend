@@ -9,6 +9,7 @@ import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';   // “Today”
 import PrayersScreen from '../screens/PrayersScreen';             // ganti jika ada
 import TambahPerkaraScreen from '../screens/TambahPerkaraScreen';             // ganti jika ada
+import DaftarPerkaraScreen from '../screens/DaftarPerkaraScreen';             // ganti jika ada
 
 
 // Dummy placeholders
@@ -37,21 +38,21 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Today"
+        name="Dashboard"
         component={HomeScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-today" color={color} size={size} />
+            <MaterialCommunityIcons name="home" color={color} size={size} />
           ),
         }}
       />
 
       <Tab.Screen
-        name="Prayers"
-        component={PrayersScreen}
+        name="Perkara"
+        component={DaftarPerkaraScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="mosque-outline" color={color} size={size} />
+            <MaterialCommunityIcons name="gavel" color={color} size={size} />
           ),
         }}
       />

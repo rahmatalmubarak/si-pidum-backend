@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import {
   Text,
@@ -14,6 +15,7 @@ import {
   Portal,
   Button,
   TextInput,
+  Chip
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,7 +45,22 @@ const hearingsNext = [
 ];
 
 export default function HomeScreen({ navigation }) {
-  const [perkaraList] = useState(initialPerkara);
+  const [perkaraList, setPerkaraList] = useState(initialPerkara);
+  /*  RefreshControl */
+  const [refreshing, setRefreshing] = useState(false);
+
+  /** Tarik-untuk-refresh */
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    // 🔄 Simulasi fetch data 1.5 detik ––––––
+    setTimeout(() => {
+      // contoh: di sini Anda bisa memanggil API dan mem-set state baru
+      setPerkaraList([...initialPerkara]); // mis. update dari server
+      setRefreshing(false);
+    }, 1500);
+  }, []);
+
   const insets = useSafeAreaInsets();
 
   const selesaiCount = perkaraList.filter(p => p.status === 'Selesai').length;
@@ -105,7 +122,15 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <LinearGradient colors={['#56c596', '#82caff']} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top }]}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top }]} refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#0d6efd']}
+          tintColor="#fff"
+        />
+      }
+      >
         <Text style={styles.header}>Dashboard Perkara</Text>
         <Text style={styles.subHeader}>Total Perkara: {perkaraList.length}</Text>
 
@@ -167,17 +192,25 @@ export default function HomeScreen({ navigation }) {
         </Card>
 
         <Text style={styles.sectionTitle}>Daftar Perkara</Text>
-        {perkaraList.map(item => (
-          <Card key={item.id} style={styles.itemCard}>
-            <View style={styles.itemRow}>
-              <Avatar.Icon size={36} icon="gavel" style={styles.iconBlue} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemStatus}>Status: {item.status}</Text>
+        {perkaraList.map(item => {
+          const isDone = item.status === 'Selesai';
+          const iconColor = isDone ? '#28a745' : '#ffc107';
+          const chipColor = isDone ? '#d1e7dd' : '#fff3cd';
+          const chipText = isDone ? '#0f5132' : '#664d03';
+          return (
+            <Card key={item.id} style={styles.itemCard}>
+              <View style={styles.itemRow}>
+                <Avatar.Icon size={40} icon="gavel" style={[styles.iconBlue, { backgroundColor: iconColor }]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Chip style={[styles.statusChip, { backgroundColor: chipColor }]} textStyle={{ color: chipText }}>
+                    {item.status}
+                  </Chip>
+                </View>
               </View>
-            </View>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
         <Button
           icon="plus"
           mode="contained"
@@ -279,6 +312,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 12,
     backgroundColor: '#fff',
+  },
+  statusChip: {
+    alignSelf: 'flex-start',
   },
   picker: { height: 52, paddingHorizontal: 12 },
 });

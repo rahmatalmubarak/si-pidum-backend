@@ -34,21 +34,12 @@ export default function TambahPerkaraScreen({ navigation }) {
   };
 
   const validateForm = () => {
-    const {
-      namaTersangka,
-      jenisPerkara,
-      tataUsahaPerkara,
-    } = form;
-
-    if (
-      !namaTersangka ||
-      !jenisPerkara ||
-      !tataUsahaPerkara
-    ) {
+    const { namaTersangka, jenisPerkara, tataUsahaPerkara } = form;
+    if (!namaTersangka || !jenisPerkara || !tataUsahaPerkara) {
       setErrorMessage('Semua field wajib diisi!');
       return false;
     }
-
+    setErrorMessage('');
     return true;
   };
 
@@ -75,16 +66,18 @@ export default function TambahPerkaraScreen({ navigation }) {
         extraScrollHeight={20}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header dengan tombol kembali di kiri */}
+        {/* Header dengan tombol kembali di kiri dan judul di tengah */}
         <View style={styles.headerRow}>
           <IconButton
             icon="arrow-left"
             size={26}
             iconColor="#fff"
-            onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home')}
+            onPress={() =>
+              navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home')
+            }
           />
           <Text style={styles.header}>Tambah Daftar Perkara</Text>
-          <View style={{ width: 48 }} /> {/* Spacer agar judul tetap di tengah */}
+          <View style={{ width: 48 }} /> {/* Spacer kanan agar teks tetap center */}
         </View>
 
         <Card style={styles.card}>
@@ -101,11 +94,11 @@ export default function TambahPerkaraScreen({ navigation }) {
               />
 
               <View style={styles.pickerWrapper}>
-                <Text style={styles.pickerLabel}>Jenis Perkara</Text>
                 <Picker
                   selectedValue={form.jenisPerkara}
                   onValueChange={(val) => handleChange('jenisPerkara', val)}
                   style={styles.picker}
+                  mode="dropdown"
                 >
                   <Picker.Item label="-- Pilih Jenis Perkara --" value="" />
                   <Picker.Item label="Pencurian" value="Pencurian" />
@@ -148,7 +141,9 @@ export default function TambahPerkaraScreen({ navigation }) {
         duration={2000}
         style={{ backgroundColor: '#198754' }}
       >
-        Perkara berhasil ditambahkan!
+        <View>
+          {/* <Text style={{ color: '#fff' }}>Perkara berhasil ditambahkan!</Text> */}
+        </View>
       </Snackbar>
     </LinearGradient>
   );
@@ -184,7 +179,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     backgroundColor: '#fff',
   },
-  label: {
+  pickerLabel: {
     fontSize: 14,
     marginBottom: 4,
     fontWeight: '600',
