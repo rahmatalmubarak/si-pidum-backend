@@ -1,8 +1,8 @@
-import { registerRootComponent } from 'expo';
+const express = require('express');
+const app = express();
+const userRoutes = require('./routes/userRoutes');
 
-import App from './App';
+app.use(express.json());
+app.use('/users', userRoutes);
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
-registerRootComponent(App);
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));

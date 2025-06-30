@@ -1,37 +1,79 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Node modules
 node_modules/
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# Watchman files
+.watchmanconfig
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# React Native Packager
+*.packager.js
 
-# Metro
-.metro-health-check*
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Metro bundler cache
+metro-cache/
+react-native/packager-cache-*/
 
-# macOS
+# iOS build
+ios/build/
+ios/Pods/
+
+# Android build
+android/.gradle/
+android/app/build/
+android/build/
+*.keystore
+
+# macOS metadata
 .DS_Store
-*.pem
 
-# local env files
-.env*.local
+# VS Code settings
+.vscode/
 
-# typescript
-*.tsbuildinfo
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Misc
+*.swp
+*.lock
+
+# Buck build system (if using)
+buck-out/
+\.buckd/
+*.buckconfig
+
+# Expo (if using)
+.expo/
+.expo-shared/
+
+# macOS folder attributes
+*.DS_Store
+
+# Gradle files
+.gradle/
+
+# Signing files
+*.jks
+
+# Fastlane metadata
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+
+# Firebase
+.firebase/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage reports
+coverage/
+
+# Android Studio
+.idea/
+*.iml
