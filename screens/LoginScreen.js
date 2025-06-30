@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Platform,
   Dimensions,
   Keyboard,
   TouchableWithoutFeedback,
@@ -14,7 +13,6 @@ import {
   Button,
   Text,
   Checkbox,
-  useTheme,
   Divider,
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,7 +26,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation }) {
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState('');
@@ -41,7 +38,7 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      if (email == '' && password == '') {
+      if (email === '' && password === '') {
         navigation.replace('Home');
       } else {
         alert('Email atau password salah!');
@@ -50,9 +47,9 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#198754' }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient
-        colors={['#0f5132', '#198754']}
+        colors={['#56c596', '#82caff']}
         style={styles.flex}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -62,23 +59,21 @@ export default function LoginScreen({ navigation }) {
             contentContainerStyle={[
               styles.container,
               {
-                paddingTop: insets.top + 32,
-                paddingBottom: insets.bottom + 32,
+                paddingTop: insets.top,
+                paddingBottom: insets.bottom,
               },
             ]}
-            enableOnAndroid={true}
+            enableOnAndroid
             keyboardShouldPersistTaps="handled"
           >
-            {/* Logo */}
             <Image
               source={require('../assets/splash-icon.png')}
               style={styles.logo}
               resizeMode="contain"
             />
 
-            {/* Card */}
             <View style={styles.card}>
-              <Text style={styles.header}>Welcome back 👋</Text>
+              <Text style={styles.header}>Selamat Datang 👋</Text>
 
               <TextInput
                 label="Email"
@@ -88,6 +83,9 @@ export default function LoginScreen({ navigation }) {
                 autoCapitalize="none"
                 left={<TextInput.Icon icon="email-outline" />}
                 style={styles.input}
+                mode="outlined"
+                outlineColor="#ccc"
+                activeOutlineColor="#0d6efd"
               />
 
               <TextInput
@@ -99,22 +97,22 @@ export default function LoginScreen({ navigation }) {
                 right={
                   <TextInput.Icon
                     icon={showPwd ? 'eye-off-outline' : 'eye-outline'}
-                    onPress={() => setShowPwd((p) => !p)}
+                    onPress={() => setShowPwd((prev) => !prev)}
                   />
                 }
                 style={styles.input}
+                mode="outlined"
+                outlineColor="#ccc"
+                activeOutlineColor="#0d6efd"
               />
 
               <View style={styles.row}>
                 <Checkbox
                   status={remember ? 'checked' : 'unchecked'}
                   onPress={() => setRemember((v) => !v)}
-                  color={colors.primary}
+                  color="#0d6efd"
                 />
-                <Text
-                  onPress={() => setRemember((v) => !v)}
-                  style={styles.remember}
-                >
+                <Text onPress={() => setRemember((v) => !v)} style={styles.remember}>
                   Remember me
                 </Text>
                 <TouchableOpacity style={styles.forgotBtn}>
@@ -128,6 +126,7 @@ export default function LoginScreen({ navigation }) {
                 loading={loading}
                 style={styles.loginBtn}
                 contentStyle={{ paddingVertical: 6 }}
+                labelStyle={{ color: '#fff', fontWeight: '600' }}
               >
                 Login
               </Button>
@@ -140,11 +139,7 @@ export default function LoginScreen({ navigation }) {
 
               <Button
                 icon={() => (
-                  <MaterialCommunityIcons
-                    name="google"
-                    size={20}
-                    color="#EA4335"
-                  />
+                  <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
                 )}
                 mode="outlined"
                 style={styles.googleBtn}
@@ -156,7 +151,7 @@ export default function LoginScreen({ navigation }) {
               <View style={styles.signupRow}>
                 <Text>Don’t have an account? </Text>
                 <Text
-                  style={[styles.signupLink, { color: colors.primary }]}
+                  style={styles.signupLink}
                   onPress={() => alert('Navigate to Register')}
                 >
                   Sign up
@@ -184,25 +179,21 @@ const styles = StyleSheet.create({
     height: 100,
     alignSelf: 'center',
     marginBottom: 16,
-    marginTop: 8,
   },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 24,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
     width: '100%',
     maxWidth: 420,
   },
   header: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: 24,
     textAlign: 'center',
+    color: '#0d6efd',
   },
   input: {
     marginBottom: 16,
@@ -214,14 +205,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 16,
   },
-  remember: { marginRight: 'auto' },
+  remember: {
+    marginRight: 'auto',
+    fontSize: 14,
+    color: '#333',
+  },
   forgotBtn: { padding: 4 },
   forgotTxt: {
     textDecorationLine: 'underline',
     fontSize: 13,
     color: '#555',
   },
-  loginBtn: { marginTop: 4 },
+  loginBtn: {
+    backgroundColor: '#0d6efd',
+    borderRadius: 10,
+    marginTop: 4,
+  },
   orWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,5 +241,6 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     fontWeight: '600',
+    color: '#0d6efd',
   },
 });

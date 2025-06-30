@@ -77,7 +77,7 @@ export default function TambahPerkaraScreen({ navigation }) {
             }
           />
           <Text style={styles.header}>Tambah Daftar Perkara</Text>
-          <View style={{ width: 48 }} /> {/* Spacer kanan agar teks tetap center */}
+          <IconButton icon="arrow-left" size={30} style={{ opacity: 0 }} />
         </View>
 
         <Card style={styles.card}>
@@ -101,6 +101,19 @@ export default function TambahPerkaraScreen({ navigation }) {
                   mode="dropdown"
                 >
                   <Picker.Item label="-- Pilih Jenis Perkara --" value="" />
+                  <Picker.Item label="Pencurian" value="Pencurian" />
+                  <Picker.Item label="Korupsi" value="Korupsi" />
+                </Picker>
+              </View>
+
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={form.tataUsahaPerkara}
+                  onValueChange={(val) => handleChange('tataUsahaPerkara', val)}
+                  style={styles.picker}
+                  mode="dropdown"
+                >
+                  <Picker.Item label="-- Pilih Tata Usaha --" value="" />
                   <Picker.Item label="Pencurian" value="Pencurian" />
                   <Picker.Item label="Korupsi" value="Korupsi" />
                 </Picker>

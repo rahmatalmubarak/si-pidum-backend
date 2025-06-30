@@ -7,9 +7,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 // --- screens ---
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';   // “Today”
-import PrayersScreen from '../screens/PrayersScreen';             // ganti jika ada
 import TambahPerkaraScreen from '../screens/TambahPerkaraScreen';             // ganti jika ada
 import DaftarPerkaraScreen from '../screens/DaftarPerkaraScreen';             // ganti jika ada
+import AgendaSidangScreen from '../screens/AgendaSidangScreen';             // ganti jika ada
+import PengaturanScreen from '../screens/PengaturanScreen';             // ganti jika ada
 
 
 // Dummy placeholders
@@ -48,6 +49,16 @@ function MainTabs() {
       />
 
       <Tab.Screen
+        name="Jadwal Sidang"
+        component={AgendaSidangScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="calendar" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
         name="Perkara"
         component={DaftarPerkaraScreen}
         options={{
@@ -58,33 +69,12 @@ function MainTabs() {
       />
 
       <Tab.Screen
-        name="Quran"
-        children={() => <Dummy title="Quran Screen" />}
+        name="Pengaturan"
+        component={PengaturanScreen}
         options={{
+          tabBarLabel: 'Pengaturan',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="book-open-page-variant" color={color} size={size} />
-          ),
-          tabBarBadge: 14,
-        }}
-      />
-
-      <Tab.Screen
-        name="Videos"
-        children={() => <Dummy title="Videos Screen" />}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="play-circle-outline" color={color} size={size} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="ForYou"
-        children={() => <Dummy title="For You Screen" />}
-        options={{
-          tabBarLabel: 'For You',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cards-heart-outline" color={color} size={size} />
+            <MaterialCommunityIcons name="cog" color={color} size={size} />
           ),
         }}
       />
@@ -100,7 +90,7 @@ export default function AppNavigator() {
     <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Home" component={MainTabs} />
-      <Stack.Screen name="TambahPerkaraScreen" component={TambahPerkaraScreen} options={{ title: 'Tambah Perkara' }} />
+      <Stack.Screen name="TambahPerkara" component={TambahPerkaraScreen} options={{ title: 'Tambah Perkara' }} />
     </Stack.Navigator>
   );
 }

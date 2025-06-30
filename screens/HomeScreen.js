@@ -28,20 +28,20 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const initialPerkara = [
-  { id: 1, title: 'Perkara Tanah', status: 'Proses' },
-  { id: 2, title: 'Perkara Waris', status: 'Selesai' },
-  { id: 3, title: 'Perkara Perdata', status: 'Proses' },
-  { id: 4, title: 'Perkara Pidana', status: 'Selesai' },
+  { id: 1, namaTersangka: 'Ahmad Santoso', jenisPerkara: 'Perkara Tanah', tahap: 'limpah' },
+  { id: 2, namaTersangka: 'Budi Setiawan', jenisPerkara: 'Perkara Waris', tahap: 'penuntutan' },
+  { id: 3, namaTersangka: 'Citra Dewi', jenisPerkara: 'Perkara Perdata', tahap: 'dakwaan' },
+  { id: 4, namaTersangka: 'Doni Prasetyo', jenisPerkara: 'Perkara Pidana', tahap: 'putusan' },
 ];
 
 const hearingsToday = [
-  { id: 1, title: 'Perkara Tanah', time: '10:00' },
-  { id: 2, title: 'Perkara Waris', time: '13:30' },
+  { id: 1, namaTersangka: 'Ahmad Santoso', jenisPerkara: 'Perkara Tanah', time: '10:00' },
+  { id: 2, namaTersangka: 'Budi Setiawan', jenisPerkara: 'Perkara Waris', time: '13:30' },
 ];
 
 const hearingsNext = [
-  { id: 3, title: 'Perkara Perdata', date: '27 Jun 2025', time: '09:00' },
-  { id: 4, title: 'Perkara Pidana', date: '29 Jun 2025', time: '11:00' },
+  { id: 3, namaTersangka: 'Citra Dewi', jenisPerkara: 'Perkara Perdata', date: '27 Jun 2025', time: '09:00' },
+  { id: 4, namaTersangka: 'Doni Prasetyo', jenisPerkara: 'Perkara Pidana', date: '29 Jun 2025', time: '11:00' },
 ];
 
 export default function HomeScreen({ navigation }) {
@@ -63,7 +63,7 @@ export default function HomeScreen({ navigation }) {
 
   const insets = useSafeAreaInsets();
 
-  const selesaiCount = perkaraList.filter(p => p.status === 'Selesai').length;
+  const selesaiCount = perkaraList.filter(p => p.tahap === 'putusan').length;
   const dalamProses = perkaraList.length - selesaiCount;
   const total = selesaiCount + dalamProses;
 
@@ -160,7 +160,7 @@ export default function HomeScreen({ navigation }) {
               <View key={h.id} style={styles.itemRow}>
                 <Avatar.Icon size={36} icon="calendar-clock" style={styles.iconGreen} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.itemTitle}>{h.title}</Text>
+                  <Text style={styles.itemTitle}>{h.namaTersangka}</Text>
                   <Text style={styles.itemStatus}>Pukul {h.time}</Text>
                 </View>
                 <IconButton
@@ -177,7 +177,7 @@ export default function HomeScreen({ navigation }) {
               <View key={h.id} style={styles.itemRow}>
                 <Avatar.Icon size={36} icon="calendar-arrow-right" style={styles.iconOrange} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.itemTitle}>{h.title}</Text>
+                  <Text style={styles.itemTitle}>{h.namaTersangka}</Text>
                   <Text style={styles.itemStatus}>{h.date} • {h.time}</Text>
                 </View>
                 <IconButton
@@ -193,7 +193,7 @@ export default function HomeScreen({ navigation }) {
 
         <Text style={styles.sectionTitle}>Daftar Perkara</Text>
         {perkaraList.map(item => {
-          const isDone = item.status === 'Selesai';
+          const isDone = item.tahap === 'putusan';
           const iconColor = isDone ? '#28a745' : '#ffc107';
           const chipColor = isDone ? '#d1e7dd' : '#fff3cd';
           const chipText = isDone ? '#0f5132' : '#664d03';
@@ -202,9 +202,9 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.itemRow}>
                 <Avatar.Icon size={40} icon="gavel" style={[styles.iconBlue, { backgroundColor: iconColor }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Text style={styles.itemTitle}>{item.namaTersangka}</Text>
                   <Chip style={[styles.statusChip, { backgroundColor: chipColor }]} textStyle={{ color: chipText }}>
-                    {item.status}
+                    {item.tahap}
                   </Chip>
                 </View>
               </View>
@@ -215,7 +215,7 @@ export default function HomeScreen({ navigation }) {
           icon="plus"
           mode="contained"
           style={{ marginTop: 12, marginBottom: 24, backgroundColor: '#0d6efd', borderRadius: 8 }}
-          onPress={() => navigation.navigate('TambahPerkaraScreen')}
+          onPress={() => navigation.navigate('TambahPerkara')}
         >
           Tambah Daftar Perkara
         </Button>
