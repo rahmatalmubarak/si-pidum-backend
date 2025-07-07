@@ -1,0 +1,8 @@
+// Buat migration untuk membuat tabel users
+npx sequelize - cli migration: generate--name create - users
+
+// Jalankan migration untuk membuat tabel users
+npx sequelize - cli db: migrate
+
+// Buat seed untuk mengisi data awal pada tabel users
+npx sequelize - cli seed: generate--name demo - user

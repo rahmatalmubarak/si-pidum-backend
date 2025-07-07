@@ -1,5 +1,5 @@
 const e = require('express');
-const perkaraModel = require('../models/perkaraModel');
+const perkaraModel = require('../models/perkara');
 
 exports.getAllPerkara = (req, res) => {
   perkaraModel.getAll((err, results) => {
@@ -62,7 +62,7 @@ exports.getPerkaraByJaksa = (req, res) => {
     if (err) return res.status(500).json({ error: err });
     res.json(results);
   });
-}; 
+};
 
 exports.getPerkaraByTu = (req, res) => {
   const tuId = req.params.tuId;
@@ -130,7 +130,7 @@ exports.getPerkaraByTanggalRange = (req, res) => {
     if (err) return res.status(500).json({ error: err });
     res.json(results);
   });
-}   
+}
 exports.getPerkaraByTanggalBerkas = (req, res) => {
   const tanggalBerkas = req.params.tanggalBerkas;
   perkaraModel.getByTanggalBerkas(tanggalBerkas, (err, results) => {

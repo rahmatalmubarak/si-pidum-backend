@@ -1,76 +1,89 @@
-const userModel = require('../models/userModel');
+const db = require('../config/db'); // koneksi mysql2
+const userModel = require('../models/users');
 
-// GET /users
-exports.getAllUsers = (req, res) => {
-  userModel.getAll((err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
+exports.getAllUsers = async (req, res) => {
+  try {
+    const [results] = await db.query(`
+      SELECT 
+        id, nama, email, role, jabatan, no_hp AS noHp, foto, remember_token AS rememberToken, created_at 
+      FROM users
+      ORDER BY created_at DESC
+    `);
 
-// GET /users/:id
-exports.getUserById = (req, res) => {
-  const id = req.params.id;
-  userModel.getById(id, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    if (results.length === 0) return res.status(404).json({ message: 'User tidak ditemukan' });
-    res.json(results[0]);
-  });
-};
-
-// POST /users
-exports.createUser = (req, res) => {
-  const { nama, email, role, jabatan, foto, password } = req.body;
-  if (!nama || !email || !role || !jabatan || !password) {
-    return res.status(400).json({ error: 'Nama, email, role, jabatan, dan password wajib diisi' });
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: "Berhasil menampilkan semua user",
+      data: results,
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: 'Gagal mengambil data user',
+    });
   }
-  userModel.create({ nama, email, role, jabatan, foto, password }, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    res.status(201).json(result);
-  });
 };
 
-// PUT /users/:id
-exports.updateUser = (req, res) => {
-  const id = req.params.id;
-  const { nama, email, role, jabatan, foto, password } = req.body;
-  if (!nama || !email || !role || !jabatan) {
-    return res.status(400).json({ error: 'Nama, email, role, dan jabatan wajib diisi' });
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const {
+    nama,
+    email,
+    password,
+    role,
+    jabatan,
+    noHp,
+    foto
+  } = req.body;
+
+  try {
+    const [userCheck] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+    if (userCheck.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: 'User tidak ditemukan',
+      });
+    }
+
+    let hashedPassword = userCheck[0].password;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    await db.query(`
+      UPDATE users SET 
+        nama = ?, email = ?, password = ?, role = ?, jabatan = ?, no_hp = ?, foto = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [nama, email, hashedPassword, role, jabatan, noHp, foto, id]);
+
+    const [updatedUserRows] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+    const updatedUser = updatedUserRows[0];
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'Ubah Data Berhasil',
+      data: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        nama: updatedUser.nama,
+        role: updatedUser.role,
+        jabatan: updatedUser.jabatan,
+        noHp: updatedUser.no_hp,
+        foto: updatedUser.foto,
+        rememberToken: updatedUser.remember_token,
+        updated_at: updatedUser.updated_at
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: 'Terjadi kesalahan saat mengupdate user'
+    });
   }
-  userModel.update(id, { nama, email, role, jabatan, foto, password }, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'User tidak ditemukan' });
-    res.json({ message: 'User berhasil diperbarui' });
-  });
 };
-// DELETE /users/:id
-exports.deleteUser = (req, res) => {
-  const id = req.params.id;
-  userModel.delete(id, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'User tidak ditemukan' });
-    res.json({ message: 'User berhasil dihapus' });
-  });
-};
-
-// POST /users/login
-exports.login = (req, res) => {
-  const { email, password } = req.body;
-  // Implementasi login logika di sini
-  userModel.login(email, password, (err, user) => {
-    if (err) return res.status(500).json({ error: err });
-    if (!user) return res.status(401).json({ message: 'Email atau password salah' });
-    // Simpan informasi user di session atau token
-    const { nama, role, jabatan, foto } = user;
-    res.status(200).json({ success: true, message: 'Login berhasil', user: { email, nama, role, jabatan, foto } });
-  });
-}
-
-exports.logout = (req, res) => {
-  const userId = req.body.userId; // Ambil userId dari request body
-  // Implementasi logout logika di sini
-  userModel.logout(userId, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    res.status(200).json({ success: true, message: 'Logout Berhasil', result });
-  });
-}
