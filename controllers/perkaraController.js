@@ -1,140 +1,79 @@
-const e = require('express');
-const perkaraModel = require('../models/perkara');
+const { v4: uuidv4 } = require('uuid');
+const db = require('../config/db'); // mysql2/promise
 
-exports.getAllPerkara = (req, res) => {
-  perkaraModel.getAll((err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
+exports.createPerkara = async (req, res) => {
+  const {
+    namaTersangka,
+    tahapanBerkas,
+    tanggalBerkas,
+    tahapanSidang,
+    tanggalSidang,
+    jaksaId,
+    jaksaKeduaId,
+    tuId,
+    habisPenahanan
+  } = req.body;
 
-exports.getPerkaraById = (req, res) => {
-  const id = req.params.id;
-  perkaraModel.getById(id, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    if (results.length === 0) {
-      return res.status(404).json({ message: 'Data perkara tidak ditemukan.' });
-    }
-    res.json(results[0]);
-  });
-};
-
-exports.createPerkara = (req, res) => {
-  const data = req.body;
-
-  if (!data.nama_tersangka || !data.jaksa_id || !data.jaksa_kedua_id || !data.tu_id || !data.habis_penahanan) {
-    return res.status(400).json({ error: 'Field wajib tidak boleh kosong.' });
+  if (!namaTersangka || !habisPenahanan) {
+    return res.status(400).json({
+      success: false,
+      status: 400,
+      message: "namaTersangka dan habisPenahanan wajib diisi"
+    });
   }
 
-  perkaraModel.create(data, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    res.status(201).json(result);
-  });
-};
+  try {
+    const id = uuidv4();
+    const now = new Date();
 
-exports.updatePerkara = (req, res) => {
-  const id = req.params.id;
-  const data = req.body;
+    const query = `
+      INSERT INTO perkara (
+        id, nama_tersangka, tahapan_berkas, tanggal_berkas, 
+        tahapan_sidang, tanggal_sidang, jaksa_id, jaksa_kedua_id, 
+        tu_id, habis_penahanan, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-  perkaraModel.update(id, data, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Data perkara tidak ditemukan.' });
-    }
-    res.json({ message: 'Data perkara berhasil diupdate.' });
-  });
-};
+    const values = [
+      id,
+      namaTersangka,
+      tahapanBerkas || null,
+      tanggalBerkas || null,
+      tahapanSidang || null,
+      tanggalSidang || null,
+      jaksaId || null,
+      jaksaKeduaId || null,
+      tuId || null,
+      habisPenahanan,
+      now,
+      now,
+    ];
 
-exports.deletePerkara = (req, res) => {
-  const id = req.params.id;
-  perkaraModel.delete(id, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Data perkara tidak ditemukan.' });
-    }
-    res.json({ message: 'Data perkara berhasil dihapus.' });
-  });
-};
+    await db.query(query, values);
 
-exports.getPerkaraByJaksa = (req, res) => {
-  const jaksaId = req.params.jaksaId;
-  perkaraModel.getByJaksa(jaksaId, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: "Perkara Berhasil ditambahkan",
+      data: {
+        id,
+        namaTersangka,
+        tahapanBerkas,
+        tanggalBerkas,
+        tahapanSidang,
+        tanggalSidang,
+        jaksaId,
+        jaksaKeduaId,
+        tuId,
+        habisPenahanan
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Terjadi kesalahan saat menambahkan perkara"
+    });
+  }
 };
-
-exports.getPerkaraByTu = (req, res) => {
-  const tuId = req.params.tuId;
-  perkaraModel.getByTu(tuId, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-
-exports.getPerkaraByJaksaKedua = (req, res) => {
-  const jaksaKeduaId = req.params.jaksaKeduaId;
-  perkaraModel.getByJaksaKedua(jaksaKeduaId, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-
-exports.getPerkaraByTanggal = (req, res) => {
-  const tanggal = req.params.tanggal;
-  perkaraModel.getByTanggal(tanggal, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-
-exports.getPerkaraByTahapan = (req, res) => {
-  const tahapan = req.params.tahapan;
-  perkaraModel.getByTahapan(tahapan, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-
-exports.getPerkaraByHabisPenahanan = (req, res) => {
-  const habisPenahanan = req.params.habisPenahanan;
-  perkaraModel.getByHabisPenahanan(habisPenahanan, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-exports.getPerkaraByNamaTersangka = (req, res) => {
-  const namaTersangka = req.params.namaTersangka;
-  perkaraModel.getByNamaTersangka(namaTersangka, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-exports.getPerkaraByTanggalSidang = (req, res) => {
-  const tanggalSidang = req.params.tanggalSidang;
-  perkaraModel.getByTanggalSidang(tanggalSidang, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-exports.getPerkaraByTahapanSidang = (req, res) => {
-  const tahapanSidang = req.params.tahapanSidang;
-  perkaraModel.getByTahapanSidang(tahapanSidang, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};
-exports.getPerkaraByTanggalRange = (req, res) => {
-  const { startDate, endDate } = req.query;
-  perkaraModel.getByTanggalRange(startDate, endDate, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-}
-exports.getPerkaraByTanggalBerkas = (req, res) => {
-  const tanggalBerkas = req.params.tanggalBerkas;
-  perkaraModel.getByTanggalBerkas(tanggalBerkas, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json(results);
-  });
-};  
