@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const db = require('../config/db'); // koneksi mysql2
 const userModel = require('../models/users');
 
@@ -84,6 +85,38 @@ exports.updateUser = async (req, res) => {
       success: false,
       status: 500,
       message: 'Terjadi kesalahan saat mengupdate user'
+    });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Cek keberadaan user
+    const [exist] = await db.query('SELECT id FROM users WHERE id = ?', [id]);
+    if (exist.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: 'User tidak ditemukan',
+      });
+    }
+
+    // Hapus user
+    await db.query('DELETE FROM users WHERE id = ?', [id]);
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'User berhasil dihapus',
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: 'Terjadi kesalahan saat menghapus user',
     });
   }
 };
