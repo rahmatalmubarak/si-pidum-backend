@@ -120,3 +120,26 @@ exports.deleteUser = async (req, res) => {
     });
   }
 };
+
+exports.getUsersByRole = async (req, res) => {
+  const { role } = req.params;
+
+  try {
+    const [users] = await db.query('SELECT * FROM users WHERE role = ?', [role]);
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: `User dengan role ${role}`,
+      data: users
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: `Gagal mengambil data user berdasarkan ${role}}`
+    });
+  }
+};

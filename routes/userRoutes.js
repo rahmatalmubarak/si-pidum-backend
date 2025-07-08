@@ -9,5 +9,7 @@ router.get('/users', authenticate, onlyAdmin, userController.getAllUsers);
 router.put('/users/:id', userController.updateUser);
 // ✅ DELETE user berdasarkan ID
 router.delete('/users/:id', authenticate, onlyAdmin, userController.deleteUser);
+// ✅ GET user berdasarkan role
+router.get('/users/role/:role', userController.getUsersByRole);
 
 module.exports = router;
