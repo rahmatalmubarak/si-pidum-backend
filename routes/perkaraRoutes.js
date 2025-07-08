@@ -15,4 +15,10 @@ router.post('/perkara/sync', perkaraController.syncPerkaraFromCMS);
 // Mengubah perkara berdasarkan ID
 router.put('/perkara/:id', authenticate, perkaraController.updatePerkara);
 
+// Mengubah Jadwal Sidang berdasarkan ID
+router.put('/perkara/:id/sidang', authenticate, perkaraController.updateSidang);
+
+// Mengubah Tahapan Berkas berdasarkan ID
+router.put('/perkara/:id/berkas', authenticate, perkaraController.updateBerkas);
+
 module.exports = router;

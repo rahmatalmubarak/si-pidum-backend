@@ -298,3 +298,66 @@ exports.updatePerkara = async (req, res) => {
     });
   }
 };
+
+exports.updateSidang = async (req, res) => {
+  const { id } = req.params;
+  const { tahapanSidang, tanggalSidang } = req.body;
+
+  try {
+    const [exist] = await db.query('SELECT * FROM perkara WHERE id = ?', [id]);
+    if (exist.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: 'Perkara tidak ditemukan',
+      });
+    }
+
+    await db.query(
+      `UPDATE perkara SET tahapan_sidang = ?, tanggal_sidang = ?, updated_at = NOW() WHERE id = ?`,
+      [tahapanSidang, tanggalSidang, id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'Jadwal Sidang berhasil diperbarui',
+      data: { id, tahapanSidang, tanggalSidang },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, status: 500, message: 'Gagal memperbarui jadwal sidang' });
+  }
+};
+
+exports.updateBerkas = async (req, res) => {
+  const { id } = req.params;
+  const { tahapanBerkas, tanggalBerkas } = req.body;
+
+  try {
+    const [exist] = await db.query('SELECT * FROM perkara WHERE id = ?', [id]);
+    if (exist.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: 'Perkara tidak ditemukan',
+      });
+    }
+
+    await db.query(
+      `UPDATE perkara SET tahapan_berkas = ?, tanggal_berkas = ?, updated_at = NOW() WHERE id = ?`,
+      [tahapanBerkas, tanggalBerkas, id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'Tahapan Berkas berhasil diperbarui',
+      data: { id, tahapanBerkas, tanggalBerkas },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, status: 500, message: 'Gagal memperbarui tahapan berkas' });
+  }
+};
+
