@@ -3,13 +3,13 @@ const router = express.Router();
 const perkaraController = require('../controllers/perkaraController');
 const { authenticate, onlyAdmin } = require('../middleware/authMiddleware');
 
-// Membuat perkara baru
-router.post('/perkara', authenticate, perkaraController.createPerkara);
-
 // menampilkan semua perkara
 router.get('/perkara', authenticate, perkaraController.getAllPerkara);
 
-// GET: /api/perkara/:id
+// Menampilkan perkara berdasarkan ID
 router.get('/perkara/:id', authenticate, perkaraController.getPerkaraById);
+
+// Sinkronisasi perkara dari CMS
+router.post('/perkara/sync', perkaraController.syncPerkaraFromCMS);
 
 module.exports = router;

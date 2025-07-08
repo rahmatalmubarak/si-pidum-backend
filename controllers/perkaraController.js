@@ -1,85 +1,18 @@
 const { v4: uuidv4 } = require('uuid');
 const db = require('../config/db'); // koneksi mysql2
-
-exports.createPerkara = async (req, res) => {
-  const {
-    namaTersangka,
-    tahapanBerkas,
-    tanggalBerkas,
-    tahapanSidang,
-    tanggalSidang,
-    jaksaId,
-    jaksaKeduaId,
-    tuId,
-    habisPenahanan
-  } = req.body;
-
-  if (!namaTersangka || !habisPenahanan) {
-    return res.status(400).json({
-      success: false,
-      status: 400,
-      message: "namaTersangka dan habisPenahanan wajib diisi"
-    });
-  }
-
-  try {
-    const id = uuidv4();
-    const now = new Date();
-
-    const query = `
-      INSERT INTO perkara (
-        id, nama_tersangka, tahapan_berkas, tanggal_berkas, 
-        tahapan_sidang, tanggal_sidang, jaksa_id, jaksa_kedua_id, 
-        tu_id, habis_penahanan, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const values = [
-      id,
-      namaTersangka,
-      tahapanBerkas || null,
-      tanggalBerkas || null,
-      tahapanSidang || null,
-      tanggalSidang || null,
-      jaksaId || null,
-      jaksaKeduaId || null,
-      tuId || null,
-      habisPenahanan,
-      now,
-      now,
-    ];
-
-    await db.query(query, values);
-
-    return res.status(200).json({
-      success: true,
-      status: 200,
-      message: "Perkara Berhasil ditambahkan",
-      data: {
-        id,
-        namaTersangka,
-        tahapanBerkas,
-        tanggalBerkas,
-        tahapanSidang,
-        tanggalSidang,
-        jaksaId,
-        jaksaKeduaId,
-        tuId,
-        habisPenahanan
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      status: 500,
-      message: "Terjadi kesalahan saat menambahkan perkara"
-    });
-  }
-};
+const axios = require('axios');
+const https = require('https');
 
 exports.getAllPerkara = async (req, res) => {
-  const { tuId, jaksaId, sort_by, order } = req.query;
+  const {
+    tuId,
+    jaksaId,
+    sort_by,
+    order,
+    habisPenahanan,
+    tanggalBerkas,
+    tanggalSidang
+  } = req.query;
 
   let query = 'SELECT * FROM perkara WHERE 1=1';
   const values = [];
@@ -96,13 +29,32 @@ exports.getAllPerkara = async (req, res) => {
     values.push(jaksaId, jaksaId);
   }
 
+  // Filter by habis_penahanan
+  if (habisPenahanan) {
+    query += ' AND habis_penahanan = ?';
+    values.push(habisPenahanan);
+  }
+
+  // Filter by tanggal_berkas
+  if (tanggalBerkas) {
+    query += ' AND tanggal_berkas = ?';
+    values.push(tanggalBerkas);
+  }
+
+  // Filter by tanggal_sidang
+  if (tanggalSidang) {
+    query += ' AND tanggal_sidang = ?';
+    values.push(tanggalSidang);
+  }
+
   // Sorting
-  const allowedSort = ['tanggalSidang', 'habisPenahanan', 'tanggalBerkas'];
+  const allowedSort = ['tanggal_sidang', 'habis_penahanan', 'tanggal_berkas'];
   const allowedOrder = ['asc', 'desc'];
 
-  if (sort_by && allowedSort.includes(sort_by)) {
-    const orderDirection = allowedOrder.includes(order?.toLowerCase()) ? order : 'asc';
-    query += ` ORDER BY ${sort_by} ${orderDirection.toUpperCase()}`;
+  if (sort_by && allowedSort.includes(sort_by.toLowerCase())) {
+    const column = sort_by.toLowerCase();
+    const direction = allowedOrder.includes(order?.toLowerCase()) ? order.toUpperCase() : 'ASC';
+    query += ` ORDER BY ${column} ${direction}`;
   }
 
   try {
@@ -111,7 +63,7 @@ exports.getAllPerkara = async (req, res) => {
     return res.status(200).json({
       success: true,
       status: 200,
-      message: "Berhasil Menampilkan Seluruh Data Perkara",
+      message: 'Berhasil Menampilkan Seluruh Data Perkara',
       data: rows,
     });
   } catch (error) {
@@ -119,10 +71,106 @@ exports.getAllPerkara = async (req, res) => {
     return res.status(500).json({
       success: false,
       status: 500,
-      message: "Terjadi kesalahan saat mengambil data perkara",
+      message: 'Terjadi kesalahan saat mengambil data perkara',
     });
   }
 };
+
+exports.syncPerkaraFromCMS = async (req, res) => {
+  try {
+    // SSL agent (abaikan verifikasi sertifikat untuk CMS)
+    const agent = new https.Agent({ rejectUnauthorized: false });
+
+    // Tambahkan timestamp agar endpoint tidak di-cache
+    const timestamp = Date.now();
+    const url =
+      'https://cms-publik.kejaksaan.go.id/api/pidum/filtered?tahun=2025&satker=03.03.01&_=' +
+      timestamp;
+
+    const response = await axios.get(url, { httpsAgent: agent });
+
+    const data = response.data.data?.main?.data || [];
+
+    const inserted = [];
+    const skipped = [];
+
+    for (const item of data) {
+      const {
+        tdw /* nama tersangka */,
+        no_berkas,
+        no_surat,
+        tgl_surat,
+        ur_ipp,
+        undang_pasal,
+        tempat_kejadian,
+        terima_spdp,
+      } = item;
+
+      // ======= CEK APAKAH DATA SUDAH ADA =======
+      const [rows] = await db.query(
+        'SELECT id FROM perkara WHERE nama_tersangka = ? AND no_surat  LIMIT 1',
+        [tdw, no_surat]
+      );
+
+      if (rows.length > 0) {
+        skipped.push({ tdw, no_surat });
+        continue; // ➜ lewati insert
+      }
+
+      // ======= INSERT BARU =======
+      const id = uuidv4();
+
+      await db.query(
+        `INSERT INTO perkara (
+          id, nama_tersangka, no_berkas, no_surat, tgl_surat, ur_ipp,
+          undang_pasal, tempat_kejadian, terima_spdp,
+          tahapan_berkas, tanggal_berkas, tahapan_sidang, tanggal_sidang,
+          jaksa_id, jaksa_kedua_id, tu_id, habis_penahanan,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          id,
+          tdw,
+          no_berkas,
+          no_surat,
+          new Date(tgl_surat).toISOString().slice(0, 10),
+          ur_ipp,
+          undang_pasal,
+          tempat_kejadian,
+          new Date(terima_spdp).toISOString().slice(0, 10),
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          new Date().toISOString().slice(0, 10),
+        ]
+      );
+
+      inserted.push({ id, no_berkas, no_surat });
+    }
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'Sinkronisasi selesai',
+      insertedCount: inserted.length,
+      skippedCount: skipped.length,
+      inserted,
+      skipped,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: 'Terjadi kesalahan saat sinkronisasi',
+    });
+  }
+};
+
 
 exports.getPerkaraById = async (req, res) => {
   const { id } = req.params;
