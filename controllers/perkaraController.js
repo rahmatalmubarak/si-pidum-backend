@@ -216,3 +216,85 @@ exports.getPerkaraById = async (req, res) => {
     });
   }
 };
+
+exports.updatePerkara = async (req, res) => {
+  const { id } = req.params;
+  const {
+    namaTersangka,
+    undangPasal,
+    tahapanBerkas,
+    tanggalBerkas,
+    tahapanSidang,
+    tanggalSidang,
+    jaksaId,
+    jaksaKeduaId,
+    tuId,
+    habisPenahanan,
+  } = req.body;
+
+  try {
+    // Pastikan perkara ada
+    const [exist] = await db.query('SELECT * FROM perkara WHERE id = ?', [id]);
+    if (exist.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: 'Perkara tidak ditemukan',
+      });
+    }
+
+    // Update
+    await db.query(
+      `UPDATE perkara SET
+        nama_tersangka   = ?, undang_pasal    = ?,  tahapan_berkas = ?, tanggal_berkas = ?,
+        tahapan_sidang   = ?,  tanggal_sidang = ?,
+        jaksa_id         = ?,  jaksa_kedua_id = ?, tu_id = ?,
+        habis_penahanan  = ?,  updated_at = NOW()
+       WHERE id = ?`,
+      [
+        namaTersangka,
+        undangPasal,
+        tahapanBerkas,
+        tanggalBerkas,
+        tahapanSidang,
+        tanggalSidang,
+        jaksaId,
+        jaksaKeduaId,
+        tuId,
+        habisPenahanan,
+        id,
+      ]
+    );
+
+    // Ambil data terbaru
+    const [updatedRows] = await db.query('SELECT * FROM perkara WHERE id = ?', [id]);
+    const p = updatedRows[0];
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      message: 'Berhasil Mengubah data Perkara',
+      data: {
+        id: p.id,
+        namaTersangka: p.nama_tersangka,
+        undangPasal: p.undang_pasal,
+        tahapanBerkas: p.tahapan_berkas,
+        tanggalBerkas: p.tanggal_berkas,
+        tahapanSidang: p.tahapan_sidang,
+        tanggalSidang: p.tanggal_sidang,
+        jaksaId: p.jaksa_id,
+        jaksaKeduaId: p.jaksa_kedua_id,
+        tuId: p.tu_id,
+        habisPenahanan: p.habis_penahanan,
+        createdAt: p.created_at,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: 'Terjadi kesalahan saat mengubah data perkara',
+    });
+  }
+};
