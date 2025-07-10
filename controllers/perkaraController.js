@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../config/db'); // koneksi mysql2
 const axios = require('axios');
 const https = require('https');
+const moment = require('moment-timezone');
 
 exports.getAllPerkara = async (req, res) => {
   const {
@@ -10,64 +11,115 @@ exports.getAllPerkara = async (req, res) => {
     sort_by,
     order,
     habisPenahanan,
+    tahapanBerkas,
+    tahapanSidang,
     tanggalBerkas,
-    tanggalSidang
+    tanggalSidang,
   } = req.query;
 
-  let query = 'SELECT * FROM perkara WHERE 1=1';
+  // Mapping field untuk sort
+  const sortFieldMap = {
+    tanggalSidang: 'p.tanggal_sidang',
+    habisPenahanan: 'p.habis_penahanan',
+    tanggalBerkas: 'p.tanggal_berkas',
+  };
+
+  const allowedOrder = ['asc', 'desc'];
+
+  let query = `
+    SELECT 
+      p.*, 
+      u1.nama AS nama_jaksa, 
+      u2.nama AS nama_jaksa_kedua, 
+      u3.nama AS nama_tu
+    FROM perkara p
+    LEFT JOIN users u1 ON p.jaksa_id = u1.id
+    LEFT JOIN users u2 ON p.jaksa_kedua_id = u2.id
+    LEFT JOIN users u3 ON p.tu_id = u3.id
+    WHERE 1=1
+  `;
+
   const values = [];
 
-  // Filter by tuId
+  // Filter
   if (tuId) {
-    query += ' AND tu_id = ?';
+    query += ' AND p.tu_id = ?';
     values.push(tuId);
   }
 
-  // Filter by jaksaId (bisa jaksa_id atau jaksa_kedua_id)
   if (jaksaId) {
-    query += ' AND (jaksa_id = ? OR jaksa_kedua_id = ?)';
+    query += ' AND (p.jaksa_id = ? OR p.jaksa_kedua_id = ?)';
     values.push(jaksaId, jaksaId);
   }
 
-  // Filter by habis_penahanan
   if (habisPenahanan) {
-    query += ' AND habis_penahanan = ?';
+    query += ' AND p.habis_penahanan = ?';
     values.push(habisPenahanan);
   }
 
-  // Filter by tanggal_berkas
+  if (tahapanBerkas) {
+    query += ' AND p.tahapan_berkas = ?';
+    values.push(tahapanBerkas);
+  }
+
+  if (tahapanSidang) {
+    query += ' AND p.tahapan_sidang = ?';
+    values.push(tahapanSidang);
+  }
+
   if (tanggalBerkas) {
-    query += ' AND tanggal_berkas = ?';
+    query += ' AND p.tanggal_berkas = ?';
     values.push(tanggalBerkas);
   }
 
-  // Filter by tanggal_sidang
   if (tanggalSidang) {
-    query += ' AND tanggal_sidang = ?';
+    query += ' AND p.tanggal_sidang = ?';
     values.push(tanggalSidang);
   }
 
   // Sorting
-  const allowedSort = ['tanggal_sidang', 'habis_penahanan', 'tanggal_berkas'];
-  const allowedOrder = ['asc', 'desc'];
-
-  if (sort_by && allowedSort.includes(sort_by.toLowerCase())) {
-    const column = sort_by.toLowerCase();
+  if (sort_by && sortFieldMap[sort_by]) {
+    const column = sortFieldMap[sort_by];
     const direction = allowedOrder.includes(order?.toLowerCase()) ? order.toUpperCase() : 'ASC';
-    query += ` ORDER BY ${column} ${direction}`;
+
+    if (sort_by === 'tanggalSidang') {
+      query += `
+        ORDER BY 
+          (p.tahapan_sidang = 'Inkracht') ASC,
+          (${column} IS NULL) ASC,
+          ${column} ${direction}
+      `;
+    } else if (sort_by === 'tanggalBerkas') {
+      query += `
+        ORDER BY 
+          (p.tahapan_berkas = 'Pelimpahan ke Pengadilan') ASC,
+          (${column} IS NULL) ASC,
+          ${column} ${direction}
+      `;
+    } else {
+      query += ` ORDER BY (${column} IS NULL), ${column} ${direction}`;
+    }
   }
 
   try {
     const [rows] = await db.query(query, values);
 
+    const data = rows.map(row => ({
+      ...row,
+      tanggal_berkas: row.tanggal_berkas ? moment(row.tanggal_berkas).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss') : null,
+      tanggal_sidang: row.tanggal_sidang ? moment(row.tanggal_sidang).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss') : null,
+      habis_penahanan: row.habis_penahanan ? moment(row.habis_penahanan).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss') : null,
+      created_at: row.created_at ? moment(row.created_at).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: row.updated_at ? moment(row.updated_at).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
     return res.status(200).json({
       success: true,
       status: 200,
       message: 'Berhasil Menampilkan Seluruh Data Perkara',
-      data: rows,
+      data,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       success: false,
       status: 500,
@@ -104,11 +156,13 @@ exports.syncPerkaraFromCMS = async (req, res) => {
         undang_pasal,
         tempat_kejadian,
         terima_spdp,
+        tgl_p48,
+        tahap_2,
       } = item;
 
       // ======= CEK APAKAH DATA SUDAH ADA =======
       const [rows] = await db.query(
-        'SELECT id FROM perkara WHERE nama_tersangka = ? AND no_surat  LIMIT 1',
+        'SELECT id FROM perkara WHERE nama_tersangka = ? AND no_surat = ? LIMIT 1',
         [tdw, no_surat]
       );
 
@@ -130,21 +184,28 @@ exports.syncPerkaraFromCMS = async (req, res) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           id,
-          tdw,
+          tdw, // nama_tersangka
           no_berkas,
           no_surat,
-          new Date(tgl_surat).toISOString().slice(0, 10),
+          tgl_surat ? new Date(tgl_surat).toISOString().slice(0, 10) : null,
           ur_ipp,
           undang_pasal,
           tempat_kejadian,
-          new Date(terima_spdp).toISOString().slice(0, 10),
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
+          terima_spdp ? new Date(terima_spdp).toISOString().slice(0, 10) : null,
+
+          // Berkas
+          tahap_2 ? 'Pelimpahan ke Pengadilan' : null, // tahapan_berkas
+          tahap_2 ? new Date(tahap_2).toISOString().slice(0, 10) : null, // tanggal_berkas
+
+          // Sidang
+          tgl_p48 ? 'Inkracht' : null, // tahapan_sidang
+          tgl_p48 ? new Date(tgl_p48).toISOString().slice(0, 10) : null, // tanggal_sidang
+
+          null, // jaksa_id
+          null, // jaksa_kedua_id
+          null, // tu_id
+
+          // habis_penahanan
           new Date().toISOString().slice(0, 10),
         ]
       );
@@ -162,7 +223,6 @@ exports.syncPerkaraFromCMS = async (req, res) => {
       skipped,
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({
       success: false,
       status: 500,
@@ -208,7 +268,6 @@ exports.getPerkaraById = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error getPerkaraById:', error);
     res.status(500).json({
       success: false,
       status: 500,
@@ -220,12 +279,6 @@ exports.getPerkaraById = async (req, res) => {
 exports.updatePerkara = async (req, res) => {
   const { id } = req.params;
   const {
-    namaTersangka,
-    undangPasal,
-    tahapanBerkas,
-    tanggalBerkas,
-    tahapanSidang,
-    tanggalSidang,
     jaksaId,
     jaksaKeduaId,
     tuId,
@@ -246,18 +299,10 @@ exports.updatePerkara = async (req, res) => {
     // Update
     await db.query(
       `UPDATE perkara SET
-        nama_tersangka   = ?, undang_pasal    = ?,  tahapan_berkas = ?, tanggal_berkas = ?,
-        tahapan_sidang   = ?,  tanggal_sidang = ?,
         jaksa_id         = ?,  jaksa_kedua_id = ?, tu_id = ?,
         habis_penahanan  = ?,  updated_at = NOW()
        WHERE id = ?`,
       [
-        namaTersangka,
-        undangPasal,
-        tahapanBerkas,
-        tanggalBerkas,
-        tahapanSidang,
-        tanggalSidang,
         jaksaId,
         jaksaKeduaId,
         tuId,
@@ -290,7 +335,6 @@ exports.updatePerkara = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({
       success: false,
       status: 500,
@@ -325,7 +369,6 @@ exports.updateSidang = async (req, res) => {
       data: { id, tahapanSidang, tanggalSidang },
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ success: false, status: 500, message: 'Gagal memperbarui jadwal sidang' });
   }
 };
@@ -356,7 +399,6 @@ exports.updateBerkas = async (req, res) => {
       data: { id, tahapanBerkas, tanggalBerkas },
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ success: false, status: 500, message: 'Gagal memperbarui tahapan berkas' });
   }
 };

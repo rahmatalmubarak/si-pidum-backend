@@ -80,7 +80,6 @@ exports.updateUser = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({
       success: false,
       status: 500,
@@ -112,7 +111,6 @@ exports.deleteUser = async (req, res) => {
       message: 'User berhasil dihapus',
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({
       success: false,
       status: 500,
@@ -135,7 +133,6 @@ exports.getUsersByRole = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       success: false,
       status: 500,

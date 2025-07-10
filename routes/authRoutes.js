@@ -8,7 +8,7 @@ const { authenticate, onlyAdmin } = require('../middleware/authMiddleware');
 router.post('/login', authController.login);
 
 // Logout
-router.post('/logout', authController.logout);
+router.post('/logout', authenticate, authController.logout);
 
 // Register (hanya untuk admin)
 router.post('/register', authenticate, onlyAdmin, authController.register);

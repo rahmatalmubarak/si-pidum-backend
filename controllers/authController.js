@@ -69,7 +69,6 @@ exports.login = async (req, res) => {
             token,
         });
     } catch (err) {
-        console.error(err);
         return res.status(500).json({
             success: false,
             status: 500,
@@ -82,7 +81,6 @@ exports.logout = async (req, res) => {
     try {
         // Misal user ID didapat dari token atau session (jika pakai middleware autentikasi)
         const token = req.headers.authorization?.split(' ')[1];
-
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -102,7 +100,6 @@ exports.logout = async (req, res) => {
             message: 'Logout Berhasil dan remember_token dihapus',
         });
     } catch (error) {
-        console.error(error);
         return res.status(500).json({
             success: false,
             status: 500,
@@ -162,7 +159,6 @@ exports.register = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
         return res.status(500).json({
             success: false,
             status: 500,
