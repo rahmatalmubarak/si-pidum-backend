@@ -198,7 +198,7 @@ exports.syncPerkaraFromCMS = async (req, res) => {
           tahap_2 ? new Date(tahap_2).toISOString().slice(0, 10) : null, // tanggal_berkas
 
           // Sidang
-          tgl_p48 ? 'Inkracht' : null, // tahapan_sidang
+          tgl_p48 ? 'Inkracht' : 'Belum Ada Jadwal', // tahapan_sidang
           tgl_p48 ? new Date(tgl_p48).toISOString().slice(0, 10) : null, // tanggal_sidang
 
           null, // jaksa_id
