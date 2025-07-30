@@ -223,6 +223,7 @@ exports.syncPerkaraFromCMS = async (req, res) => {
       skipped,
     });
   } catch (err) {
+    console.error('❌ Error sync:', err);
     return res.status(500).json({
       success: false,
       status: 500,
