@@ -15,9 +15,9 @@
   },
   "production": {
     "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
+    "password": "86s4XL1b0CFQwUf5vnZdB7GW29j3ArPx",
+    "database": "si_pidum_backend",
+    "host": "cgk1.clusters.zeabur.com",
     "dialect": "mysql"
   }
 }
