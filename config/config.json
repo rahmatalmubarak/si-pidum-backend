@@ -14,8 +14,8 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "rahmat",
-    "password": "password21",
+    "username": "root",
+    "password": null,
     "database": "si_pidum_backend",
     "host": "127.0.0.1",
     "dialect": "mysql"
