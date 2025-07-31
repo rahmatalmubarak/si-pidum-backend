@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../config/db'); // koneksi mysql2
 const axios = require('axios');
 const https = require('https');
-const moment = require('moment-timezone');
+const moment = require('moment');
 
 exports.getAllPerkara = async (req, res) => {
   const {
@@ -106,11 +106,11 @@ exports.getAllPerkara = async (req, res) => {
 
     const data = rows.map(row => ({
       ...row,
-      tanggal_berkas: row.tanggal_berkas ? row.tanggal_berkas.format('YYYY-MM-DD HH:mm:ss') : null,
-      tanggal_sidang: row.tanggal_sidang ? row.tanggal_sidang.format('YYYY-MM-DD HH:mm:ss') : null,
-      habis_penahanan: row.habis_penahanan ? row.habis_penahanan.format('YYYY-MM-DD HH:mm:ss') : null,
-      created_at: row.created_at ? row.created_at.format('YYYY-MM-DD HH:mm:ss') : null,
-      updated_at: row.updated_at ? row.updated_at.format('YYYY-MM-DD HH:mm:ss') : null,
+      tanggal_berkas: row.tanggal_berkas ? moment(row.tanggal_berkas).format('YYYY-MM-DD HH:mm:ss') : null,
+      tanggal_sidang: row.tanggal_sidang ? moment(row.tanggal_sidang).format('YYYY-MM-DD HH:mm:ss') : null,
+      habis_penahanan: row.habis_penahanan ? moment(row.habis_penahanan).format('YYYY-MM-DD HH:mm:ss') : null,
+      created_at: row.created_at ? moment(row.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: row.updated_at ? moment(row.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
     }));
 
     return res.status(200).json({
