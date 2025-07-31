@@ -4,42 +4,134 @@ const db = require('../config/db'); // mysql2/promise
 
 async function seedUsers() {
   try {
-    const password = await bcrypt.hash('password123', 10);
+    const password = await bcrypt.hash('pkl123', 10);
     const now = new Date();
 
-    const users = [];
-
-    // 10 Tata Usaha
-    for (let i = 1; i <= 10; i++) {
-      users.push([
+    const users = [
+      [
         uuidv4(),
-        `Tata Usaha ${i}`,
-        `tu${i}@mail.com`,
-        password,
-        'tata_usaha',
-        'Staf TU',
-        `0812345678${i}`,
-        null,
-        now,
-        now,
-      ]);
-    }
-
-    // 2 Jaksa
-    for (let j = 1; j <= 2; j++) {
-      users.push([
-        uuidv4(),
-        `Jaksa ${j}`,
-        `jaksa${j}@mail.com`,
+        'Dhipo Akhmadsyah Sembiring, S. H, M. H',
+        'dhipo.akhmadsyah.sembiring@kejaksaan.go.id',
         password,
         'jaksa',
-        'Jaksa Penuntut Umum',
-        `0898765432${j}`,
+        'Kacab Pangkalan',
+        '0895600632876',
         null,
         now,
         now,
-      ]);
-    }
+      ],
+      [
+        uuidv4(),
+        'Annisa Syahwitri, S.H.',
+        'annisa.syahwitri@kejaksaan.go.id',
+        password,
+        'jaksa',
+        'Jaksa Fungsional',
+        '0895600632876',
+        null,
+        now,
+        now,
+      ],
+      [
+        uuidv4(),
+        'Adilla Mamega Sari, S.H.',
+        'adilla.mamega.sari@kejaksaan.go.id',
+        password,
+        'jaksa',
+        'Jaksa Fungsional',
+        '0895600632876',
+        null,
+        now,
+        now,
+      ],
+      [
+        uuidv4(),
+        'Winalia Oktora, S.H.',
+        'winalia.oktora@kejaksaan.go.id',
+        password,
+        'jaksa',
+        'Jaksa Fungsional',
+        '0895600632876',
+        null,
+        now,
+        now,
+      ],
+      [
+        uuidv4(),
+        'Herma Desvira, S.H.',
+        'herma.desvira@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '0895600632876',
+        null,
+        now,
+        now,
+      ],
+      [
+        uuidv4(),
+        'Rafi Pratama Akhlin, S.H.',
+        'rafi.pratma.akhlin@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Noviana, A.Md.Kom',
+        'noviana@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Randu Fascal',
+        'randu.fascal@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Ardian Waskita Nugraha',
+        'Ardian.waskita.nugraha@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Syahnia Chairunnisa, A.Md.',
+        'syahnia.chairunnisa@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Pidum',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Elsi Ramadhani, A.Md.',
+        'elsi.ramadhani@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Barang Bukti',
+        '081268159059'
+      ],
+      [
+        uuidv4(),
+        'Rahmat Almubarak, A.Md.T',
+        'rahmat.almubarak@kejaksaan.go.id',
+        password,
+        'tata_usaha',
+        'Staf Barang Bukti',
+        '081268159059'
+      ]
+    ];
 
     const query = `
       INSERT INTO users (
