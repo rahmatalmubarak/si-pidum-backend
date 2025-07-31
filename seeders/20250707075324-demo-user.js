@@ -4,7 +4,7 @@ const db = require('../config/db'); // mysql2/promise
 
 async function seedUsers() {
   try {
-    const password = await bcrypt.hash('pkl123', 10);
+    const password = await bcrypt.hash('pangkalan123', 10);
     const now = new Date();
 
     const users = [
