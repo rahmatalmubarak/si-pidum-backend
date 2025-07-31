@@ -75,7 +75,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Pidum',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -84,7 +87,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Pidum',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -93,7 +99,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Pidum',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -102,7 +111,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Pidum',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -111,7 +123,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Pidum',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -120,7 +135,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Barang Bukti',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ],
       [
         uuidv4(),
@@ -129,7 +147,10 @@ async function seedUsers() {
         password,
         'tata_usaha',
         'Staf Barang Bukti',
-        '081268159059'
+        '081268159059',
+        null,
+        now,
+        now,
       ]
     ];
 
