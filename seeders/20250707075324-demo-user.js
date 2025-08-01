@@ -97,7 +97,7 @@ async function seedUsers() {
         'Noviana, A.Md.Kom',
         'noviana@kejaksaan.go.id',
         password,
-        'jaksa',
+        'tata_usaha',
         'Staf Pidum',
         '0000000000000',
         null,
